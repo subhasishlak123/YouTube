@@ -4,6 +4,7 @@ import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -19,12 +20,18 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // --- THIS KEEPS THE SCREEN ON FOR PORTRAIT AND FULLSCREEN ---
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        
         webView = WebView(this)
         setContentView(webView)
 
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.mediaPlaybackRequiresUserGesture = false
+        
+        // Helps load the mobile version correctly
+        webView.settings.userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
         
         webView.webViewClient = WebViewClient()
 
@@ -37,14 +44,12 @@ class MainActivity : AppCompatActivity() {
                 customView = view
                 customViewCallback = callback
                 
-                // Hide the WebView and show the video view
                 (window.decorView as FrameLayout).addView(customView, FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, 
                     ViewGroup.LayoutParams.MATCH_PARENT
                 ))
                 webView.visibility = View.GONE
                 
-                // Force landscape orientation
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             }
 
@@ -55,7 +60,6 @@ class MainActivity : AppCompatActivity() {
                 
                 webView.visibility = View.VISIBLE
                 
-                // Return to portrait or user sensor orientation
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             }
         }
@@ -65,7 +69,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         if (customView != null) {
-            // If in full screen, exit full screen first
             webView.webChromeClient?.onHideCustomView()
         } else if (webView.canGoBack()) {
             webView.goBack()
